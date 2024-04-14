@@ -229,3 +229,44 @@ class intIteration(val assign:String,val start:Expr, val end:Expr, val body:Bloc
         return StringData("Done")
     }
 }
+
+class struct(val names:List<String>,val values:List<Expr>) :Expr() {
+
+     override fun eval(runtime:Runtime):Data {
+            
+         val contents:MutableMap<String, Expr> = mutableMapOf()
+         println("in struct")
+         println(names.get(0))
+         
+         val names = names
+         val values = values
+         for(i in names.indices){
+             contents.put(names.get(i),values.get(i))
+         }
+         return StructData(contents)
+        
+     }
+}
+
+
+
+class readStruct(
+    val structobj:Expr,
+    val target:String
+):Expr(){
+    override fun eval(runtime:Runtime): Data {
+        //println("concat")
+        val x:Data = structobj.eval(runtime)
+
+        println(x)
+        println(x.javaClass.name)
+        if(x !is StructData) {
+            throw Exception("cannot handle non String")
+        }
+        println(x.value)
+        //print("concat result " + x.value + y.value)
+        val ret = x.value[target]
+        
+        return ret!!.eval(runtime)
+    }
+}

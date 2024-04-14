@@ -20,6 +20,13 @@ class StringData(val value:String): Data() {
 
 }
 
+class StructData(val value:MutableMap<String, Expr>): Data() {
+    override fun toString(): String = "struct object"
+    
+    
+
+}
+
 class BooleanData(val value:Boolean): Data() {
     override fun toString() = 
     "Boolean:${value}"

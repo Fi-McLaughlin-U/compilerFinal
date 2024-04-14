@@ -24,10 +24,12 @@ T__22=23
 T__23=24
 T__24=25
 T__25=26
-Whitespace=27
-STRING=28
-NUMBER=29
-NAME=30
+T__26=27
+T__27=28
+Whitespace=29
+STRING=30
+NUMBER=31
+NAME=32
 'for('=1
 'in'=2
 '..'=3
@@ -54,3 +56,5 @@ NAME=30
 '!='=24
 'let'=25
 '='=26
+'struct{'=27
+'.'=28

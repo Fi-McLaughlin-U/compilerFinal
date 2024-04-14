@@ -25,6 +25,9 @@ statement returns [Expr expr]// high level expressions.
     statementscnd2 = new ArrayList<Expr>(); } (st2=statement { statementscnd2.add($st2.expr); } )* '}' { $expr = new Ifelse($cond.expr, new Block(statementscnd), new 
     Block(statementscnd2));}
     | ex1=expr1 ';'? { $expr = $ex1.expr; }
+    //| {List<String> names = new ArrayList<String>(); List<Expr> exprs = new ArrayList<Expr>();}'struct{' (NAME {names.add($NAME.text);} '=' ex1=expr1 
+    //{exprs.add($ex1.expr);} ';'?)* '}'';'? {$expr = new struct(names,exprs);}
+
     ;
 
 
@@ -49,6 +52,9 @@ expr1 returns [Expr expr]//lower level expressions
     | 'let'? NAME '=' expr1 {$expr = new Assign($NAME.text,$expr1.expr);}
     | 'print(' ex1=expr1 ')' ';'? { $expr = new ioPrint($ex1.expr); }
     | fName=NAME '(' arguments=argsList ')' { $expr = new Invoke($fName.text, $arguments.args);}
+    |{List<String> names = new ArrayList<String>(); List<Expr> vals = new ArrayList<Expr>();}'struct{' (NAME{names.add($NAME.text);} '=' 
+    expr1{vals.add($expr1.expr);})*'}'{$expr = new struct(names,vals); System.out.println("struct");}
+    | sname=expr1'.'vname=NAME {$expr= new readStruct($sname.expr,$vname.text);}
     | STRING {$expr = new StringLiteral($STRING.text);} //note i think this might cause issues ill check later
     | NUMBER {$expr = new IntLiteral($NUMBER.text);}
     ;
