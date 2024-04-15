@@ -52,3 +52,8 @@ class StringArrData(val values:Array<StringData>): Data() {
     override fun toString()
     = "[\"" + values.joinToString("\", \"").let{ "$it" } + "\"]"
 }
+
+class ListData(val values:MutableList<Any>): Data() {
+    override fun toString()
+    = "[" + values.joinToString(", ").let{ "$it" } + "]"
+}

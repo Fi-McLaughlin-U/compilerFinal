@@ -165,7 +165,7 @@ class Ifelse(
         if(cond_data !is BooleanData) {
             throw Exception("need boolean data in if-else")
         }
-        return if(cond_data.value) {
+        if(cond_data.value) {
             return trueExpr.eval(runtime)
         } else {
             return falseExpr.eval(runtime)
@@ -271,7 +271,7 @@ class readStruct(
     }
 }
 
-class QueryArray(
+class Query(
     val arrName: String,
     val index: Expr
 ): Expr() {
@@ -296,7 +296,17 @@ class QueryArray(
                 throw Exception("index out of bound")
             }
             return data.values[iter.value]
-        }else {
+        } else if (data is ListData) {
+            if (iter.value >= data.values.size) {
+                throw Exception("index out of bound")
+            }
+            val queryRes = data.values[iter.value]
+            if (queryRes is Data) {
+                return queryRes
+            } else {
+                throw Exception("object at $index is not a list object")
+            }
+        } else {
             throw Exception("$arrName is not an array")
         }
     }
@@ -327,7 +337,7 @@ class IntArray(
 class StringArray(
     val elements: List<Expr>
 ): Expr() {
-    fun checkInt(values:List<Expr>, runtime:Runtime): Array<StringData> {
+    fun checkStr(values:List<Expr>, runtime:Runtime): Array<StringData> {
         val strArray = Array<StringData>(values.size) { StringData("") }
         var iter = 0;
         for (value in values) {
@@ -343,5 +353,25 @@ class StringArray(
     }
 
     override fun eval(runtime:Runtime): Data =
-    StringArrData(checkInt(elements, runtime))
+    StringArrData(checkStr(elements, runtime))
+}
+
+class MutList(
+    val elements: List<Expr>
+): Expr() {
+    fun checkList(values:List<Expr>, runtime:Runtime): MutableList<Any> {
+        val resultList = mutableListOf<Any>()
+        for (value in values) {
+            val x = value.eval(runtime)
+            if (x !is FuncData) {
+                resultList.add(x)
+            } else {
+                throw Exception("Functions are not supported in List")
+            }
+        }
+        return resultList
+    }
+
+    override fun eval(runtime:Runtime): Data =
+    ListData(checkList(elements, runtime))
 }
