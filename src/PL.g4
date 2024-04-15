@@ -47,8 +47,14 @@ expr1 returns [Expr expr]//lower level expressions
     | ex1=expr1 '==' ex2=expr1 { $expr = new Compare(ComparatorOP.EQ, $ex1.expr, $ex2.expr); }
     | ex1=expr1 '!=' ex2=expr1 { $expr = new Compare(ComparatorOP.NE, $ex1.expr, $ex2.expr); }
     | '(' e=expr1 ')' { $expr=$e.expr; }
-    | id=NAME { $expr = new Deref($id.text); } 
+    | id=NAME { $expr = new Deref($id.text); }
     | 'let'? NAME '=' expr1 {$expr = new Assign($NAME.text,$expr1.expr);}
+    | 'IntArray[' argsList ']' { $expr = new IntArray($argsList.args); }
+    | 'StringArray[' argsList ']' { $expr = new StringArray($argsList.args); }
+    | NAME '[' expr1 ']' { $expr = new Query($NAME.text, $expr1.expr); }
+    | 'List[' argsList ']' { $expr = new MutList($argsList.args); }
+    | NAME '.add(' argsList ')' { $expr = new ListAct($NAME.text, "add", $argsList.args); }
+    | NAME '.drop(' argsList ')' { $expr = new ListAct($NAME.text, "drop", $argsList.args); }
     | 'print(' ex1=expr1 ')' ';'? { $expr = new ioPrint($ex1.expr); }
     | fName=NAME '(' arguments=argsList ')' { $expr = new Invoke($fName.text, $arguments.args);}
     |{List<String> names = new ArrayList<String>(); List<Expr> vals = new ArrayList<Expr>();}'struct{' (NAME{names.add($NAME.text);} '=' 

@@ -165,7 +165,7 @@ class Ifelse(
         if(cond_data !is BooleanData) {
             throw Exception("need boolean data in if-else")
         }
-        return if(cond_data.value) {
+        if(cond_data.value) {
             return trueExpr.eval(runtime)
         } else {
             return falseExpr.eval(runtime)
@@ -268,5 +268,176 @@ class readStruct(
         val ret = x.value[target]
         
         return ret!!.eval(runtime)
+    }
+}
+
+class Query(
+    val arrName: String,
+    val index: Expr
+): Expr() {
+    override fun eval(runtime:Runtime): Data {
+        val data = runtime.symbolTable[arrName]
+        val iter = index.eval(runtime)
+        if(data == null) {
+            throw Exception("$arrName is not assigned.")
+        }
+
+        // Note: Errors produced when doing (data is IntArrData || data is StringArrData)
+        if (data is IntArrData) {
+            if (iter !is IntData) {
+                throw Exception("only integer is accepted as index")
+            }
+            if (iter.value >= data.values.size) {
+                throw Exception("index out of bound")
+            }
+            return data.values[iter.value]
+        } else if (data is StringArrData) {
+            if (iter !is IntData) {
+                throw Exception("only integer is accepted as index")
+            }
+            if (iter.value >= data.values.size) {
+                throw Exception("index out of bound")
+            }
+            return data.values[iter.value]
+        } else if (data is ListData) {
+            if (iter !is IntData) {
+                throw Exception("only integer is accepted as index")
+            }
+            if (iter.value >= data.values.size) {
+                throw Exception("index out of bound")
+            }
+            val queryRes = data.values[iter.value]
+            if (queryRes is Data) {
+                return queryRes
+            } else {
+                throw Exception("object at $index is not a list object")
+            }
+        } else {
+            throw Exception("$arrName is not an array")
+        }
+    }
+}
+
+class IntArray(
+    val elements: List<Expr>
+): Expr() {
+    fun checkInt(values:List<Expr>, runtime:Runtime): Array<IntData> {
+        val numArray = Array<IntData>(values.size) { IntData(0) }
+        var iter = 0;
+        for (value in values) {
+            val x = value.eval(runtime)
+            if (x is IntData) {
+                numArray[iter] = x
+            } else {
+                throw Exception("only int for IntArray")
+            }
+            iter++
+        }
+        return numArray
+    }
+
+    override fun eval(runtime:Runtime): Data =
+    IntArrData(checkInt(elements, runtime))
+}
+
+class StringArray(
+    val elements: List<Expr>
+): Expr() {
+    fun checkStr(values:List<Expr>, runtime:Runtime): Array<StringData> {
+        val strArray = Array<StringData>(values.size) { StringData("") }
+        var iter = 0;
+        for (value in values) {
+            val x = value.eval(runtime)
+            if (x is StringData) {
+                strArray[iter] = x
+            } else {
+                throw Exception("only string for StringArray")
+            }
+            iter++
+        }
+        return strArray
+    }
+
+    override fun eval(runtime:Runtime): Data =
+    StringArrData(checkStr(elements, runtime))
+}
+
+class MutList(
+    val elements: List<Expr>
+): Expr() {
+    fun checkList(values:List<Expr>, runtime:Runtime): MutableList<Any> {
+        val resultList = mutableListOf<Any>()
+        for (value in values) {
+            val x = value.eval(runtime)
+            if (x !is FuncData) {
+                resultList.add(x)
+            } else {
+                throw Exception("Functions are not supported in List")
+            }
+        }
+        return resultList
+    }
+
+    override fun eval(runtime:Runtime): Data =
+    ListData(checkList(elements, runtime))
+}
+
+class ListAct(
+    val lsName: String,
+    val action: String,
+    val elements: List<Expr>
+): Expr() {
+    override fun eval(runtime:Runtime): Data {
+        val data = runtime.symbolTable[lsName]
+        if(data == null) {
+            throw Exception("$lsName is not assigned.")
+        }
+
+        if (data is ListData) {
+            var resultList = data.values
+            if (action.equals("add")) {
+                for (ele in elements) {
+                    val x = ele.eval(runtime)
+                    if (x !is FuncData) {
+                        resultList.add(x)
+                    } else {
+                        throw Exception("Functions are not supported in List")
+                    }
+                }
+            } else if (action.equals("drop")) {
+                for (ele in elements) {
+                    val x = ele.eval(runtime)
+                    if (x !is FuncData) {
+                        if (x is StringData) {
+                            for (i in (resultList.size - 1) downTo 0) {
+                                val y = resultList[i]
+                                if (y is StringData) {
+                                    if (y.value.equals(x.value)) {
+                                        resultList.removeAt(i)
+                                    }
+                                }
+                            }
+                        } else if (x is IntData) {
+                            for (i in (resultList.size - 1) downTo 0) {
+                                val y = resultList[i]
+                                if (y is IntData) {
+                                    if (y.value == x.value) {
+                                        resultList.removeAt(i)
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        throw Exception("Functions are not supported in List")
+                    }
+                }
+            } else {
+                throw Exception("$action is not referenced")
+            }
+            runtime.symbolTable.put(lsName, ListData(resultList))
+            return None
+        } else {
+            throw Exception("$lsName is not a list")
+        }
     }
 }
