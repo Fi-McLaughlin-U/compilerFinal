@@ -51,6 +51,7 @@ expr1 returns [Expr expr]//lower level expressions
     | 'let'? NAME '=' expr1 {$expr = new Assign($NAME.text,$expr1.expr);}
     | 'IntArray[' argsList ']' { $expr = new IntArray($argsList.args); }
     | 'StringArray[' argsList ']' { $expr = new StringArray($argsList.args); }
+    | NAME '[' expr1 ']' { $expr = new QueryArray($NAME.text, $expr1.expr); }
     | 'print(' ex1=expr1 ')' ';'? { $expr = new ioPrint($ex1.expr); }
     | fName=NAME '(' arguments=argsList ')' { $expr = new Invoke($fName.text, $arguments.args);}
     |{List<String> names = new ArrayList<String>(); List<Expr> vals = new ArrayList<Expr>();}'struct{' (NAME{names.add($NAME.text);} '=' 

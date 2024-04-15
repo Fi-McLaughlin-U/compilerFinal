@@ -271,6 +271,37 @@ class readStruct(
     }
 }
 
+class QueryArray(
+    val arrName: String,
+    val index: Expr
+): Expr() {
+    override fun eval(runtime:Runtime): Data {
+        val data = runtime.symbolTable[arrName]
+        val iter = index.eval(runtime)
+        if(data == null) {
+            throw Exception("$arrName is not assigned.")
+        }
+        if (iter !is IntData) {
+            throw Exception("only integer is accepted as index")
+        }
+
+        // Note: Errors produced when doing (data is IntArrData || data is StringArrData)
+        if (data is IntArrData) {
+            if (iter.value >= data.values.size) {
+                throw Exception("index out of bound")
+            }
+            return data.values[iter.value]
+        } else if (data is StringArrData) {
+            if (iter.value >= data.values.size) {
+                throw Exception("index out of bound")
+            }
+            return data.values[iter.value]
+        }else {
+            throw Exception("$arrName is not an array")
+        }
+    }
+}
+
 class IntArray(
     val elements: List<Expr>
 ): Expr() {
