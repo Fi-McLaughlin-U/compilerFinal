@@ -50,6 +50,7 @@ expr1 returns [Expr expr]//lower level expressions
     | id=NAME { $expr = new Deref($id.text); }
     | 'let'? NAME '=' expr1 {$expr = new Assign($NAME.text,$expr1.expr);}
     | 'IntArray[' argsList ']' { $expr = new IntArray($argsList.args); }
+    | 'StringArray[' argsList ']' { $expr = new StringArray($argsList.args); }
     | 'print(' ex1=expr1 ')' ';'? { $expr = new ioPrint($ex1.expr); }
     | fName=NAME '(' arguments=argsList ')' { $expr = new Invoke($fName.text, $arguments.args);}
     |{List<String> names = new ArrayList<String>(); List<Expr> vals = new ArrayList<Expr>();}'struct{' (NAME{names.add($NAME.text);} '=' 

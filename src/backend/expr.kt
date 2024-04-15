@@ -293,4 +293,24 @@ class IntArray(
     IntArrData(checkInt(elements, runtime))
 }
 
+class StringArray(
+    val elements: List<Expr>
+): Expr() {
+    fun checkInt(values:List<Expr>, runtime:Runtime): Array<StringData> {
+        val strArray = Array<StringData>(values.size) { StringData("") }
+        var iter = 0;
+        for (value in values) {
+            val x = value.eval(runtime)
+            if (x is StringData) {
+                strArray[iter] = x
+            } else {
+                throw Exception("only string for StringArray")
+            }
+            iter++
+        }
+        return strArray
+    }
 
+    override fun eval(runtime:Runtime): Data =
+    StringArrData(checkInt(elements, runtime))
+}
