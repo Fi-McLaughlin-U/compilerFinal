@@ -25,8 +25,7 @@ statement returns [Expr expr]// high level expressions.
     statementscnd2 = new ArrayList<Expr>(); } (st2=statement { statementscnd2.add($st2.expr); } )* '}' { $expr = new Ifelse($cond.expr, new Block(statementscnd), new 
     Block(statementscnd2));}
     | ex1=expr1 ';'? { $expr = $ex1.expr; }
-    //| {List<String> names = new ArrayList<String>(); List<Expr> exprs = new ArrayList<Expr>();}'struct{' (NAME {names.add($NAME.text);} '=' ex1=expr1 
-    //{exprs.add($ex1.expr);} ';'?)* '}'';'? {$expr = new struct(names,exprs);}
+
 
     ;
 
@@ -48,13 +47,20 @@ expr1 returns [Expr expr]//lower level expressions
     | ex1=expr1 '==' ex2=expr1 { $expr = new Compare(ComparatorOP.EQ, $ex1.expr, $ex2.expr); }
     | ex1=expr1 '!=' ex2=expr1 { $expr = new Compare(ComparatorOP.NE, $ex1.expr, $ex2.expr); }
     | '(' e=expr1 ')' { $expr=$e.expr; }
-    | id=NAME { $expr = new Deref($id.text); } 
+    | id=NAME { $expr = new Deref($id.text); }
     | 'let'? NAME '=' expr1 {$expr = new Assign($NAME.text,$expr1.expr);}
+    | 'IntArray[' argsList ']' { $expr = new IntArray($argsList.args); }
+    | 'StringArray[' argsList ']' { $expr = new StringArray($argsList.args); }
+    | NAME '[' expr1 ']' { $expr = new Query($NAME.text, $expr1.expr); }
+    | 'List[' argsList ']' { $expr = new MutList($argsList.args); }
+    | NAME '.add(' argsList ')' { $expr = new ListAct($NAME.text, "add", $argsList.args); }
+    | NAME '.drop(' argsList ')' { $expr = new ListAct($NAME.text, "drop", $argsList.args); }
     | 'print(' ex1=expr1 ')' ';'? { $expr = new ioPrint($ex1.expr); }
     | fName=NAME '(' arguments=argsList ')' { $expr = new Invoke($fName.text, $arguments.args);}
     |{List<String> names = new ArrayList<String>(); List<Expr> vals = new ArrayList<Expr>();}'struct{' (NAME{names.add($NAME.text);} '=' 
     expr1{vals.add($expr1.expr);})*'}'{$expr = new struct(names,vals); System.out.println("struct");}
     | sname=expr1'.'vname=NAME {$expr= new readStruct($sname.expr,$vname.text);}
+    | sname=expr1'.'vname=NAME '=' input=expr1 {$expr = new MutateStruct($sname.expr,$vname.text,$input.expr);}
     | STRING {$expr = new StringLiteral($STRING.text);} //note i think this might cause issues ill check later
     | NUMBER {$expr = new IntLiteral($NUMBER.text);}
     ;

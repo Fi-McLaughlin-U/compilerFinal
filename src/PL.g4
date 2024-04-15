@@ -60,6 +60,7 @@ expr1 returns [Expr expr]//lower level expressions
     |{List<String> names = new ArrayList<String>(); List<Expr> vals = new ArrayList<Expr>();}'struct{' (NAME{names.add($NAME.text);} '=' 
     expr1{vals.add($expr1.expr);})*'}'{$expr = new struct(names,vals); System.out.println("struct");}
     | sname=expr1'.'vname=NAME {$expr= new readStruct($sname.expr,$vname.text);}
+    | sname=expr1'.'vname=NAME '=' input=expr1 {$expr = new MutateStruct($sname.expr,$vname.text,$input.expr);}
     | STRING {$expr = new StringLiteral($STRING.text);} //note i think this might cause issues ill check later
     | NUMBER {$expr = new IntLiteral($NUMBER.text);}
     ;

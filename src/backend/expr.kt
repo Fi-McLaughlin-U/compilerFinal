@@ -271,6 +271,28 @@ class readStruct(
     }
 }
 
+class MutateStruct(
+    val structobj:Expr,
+    val target:String,
+    val input:Expr
+):Expr(){
+    override fun eval(runtime:Runtime): Data {
+        //println("concat")
+        val x:Data = structobj.eval(runtime)
+
+        //println(x)
+        //println(x.javaClass.name)
+        if(x !is StructData) {
+            throw Exception("cannot handle non String")
+        }
+        //println(x.value)
+        //print("concat result " + x.value + y.value)
+        x.value.put(target,input)
+        
+        return x
+    }
+}
+
 class Query(
     val arrName: String,
     val index: Expr
