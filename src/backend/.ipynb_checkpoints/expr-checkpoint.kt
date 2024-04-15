@@ -235,8 +235,8 @@ class struct(val names:List<String>,val values:List<Expr>) :Expr() {
      override fun eval(runtime:Runtime):Data {
             
          val contents:MutableMap<String, Expr> = mutableMapOf()
-         println("in struct")
-         println(names.get(0))
+         //println("in struct")
+         //println(names.get(0))
          
          val names = names
          val values = values
@@ -258,12 +258,12 @@ class readStruct(
         //println("concat")
         val x:Data = structobj.eval(runtime)
 
-        println(x)
-        println(x.javaClass.name)
+        //println(x)
+        //println(x.javaClass.name)
         if(x !is StructData) {
             throw Exception("cannot handle non String")
         }
-        println(x.value)
+        //println(x.value)
         //print("concat result " + x.value + y.value)
         val ret = x.value[target]
         
