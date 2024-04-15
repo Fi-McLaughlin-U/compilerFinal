@@ -281,22 +281,28 @@ class Query(
         if(data == null) {
             throw Exception("$arrName is not assigned.")
         }
-        if (iter !is IntData) {
-            throw Exception("only integer is accepted as index")
-        }
 
         // Note: Errors produced when doing (data is IntArrData || data is StringArrData)
         if (data is IntArrData) {
+            if (iter !is IntData) {
+                throw Exception("only integer is accepted as index")
+            }
             if (iter.value >= data.values.size) {
                 throw Exception("index out of bound")
             }
             return data.values[iter.value]
         } else if (data is StringArrData) {
+            if (iter !is IntData) {
+                throw Exception("only integer is accepted as index")
+            }
             if (iter.value >= data.values.size) {
                 throw Exception("index out of bound")
             }
             return data.values[iter.value]
         } else if (data is ListData) {
+            if (iter !is IntData) {
+                throw Exception("only integer is accepted as index")
+            }
             if (iter.value >= data.values.size) {
                 throw Exception("index out of bound")
             }
@@ -374,4 +380,64 @@ class MutList(
 
     override fun eval(runtime:Runtime): Data =
     ListData(checkList(elements, runtime))
+}
+
+class ListAct(
+    val lsName: String,
+    val action: String,
+    val elements: List<Expr>
+): Expr() {
+    override fun eval(runtime:Runtime): Data {
+        val data = runtime.symbolTable[lsName]
+        if(data == null) {
+            throw Exception("$lsName is not assigned.")
+        }
+
+        if (data is ListData) {
+            var resultList = data.values
+            if (action.equals("add")) {
+                for (ele in elements) {
+                    val x = ele.eval(runtime)
+                    if (x !is FuncData) {
+                        resultList.add(x)
+                    } else {
+                        throw Exception("Functions are not supported in List")
+                    }
+                }
+            } else if (action.equals("drop")) {
+                for (ele in elements) {
+                    val x = ele.eval(runtime)
+                    if (x !is FuncData) {
+                        if (x is StringData) {
+                            for (i in (resultList.size - 1) downTo 0) {
+                                val y = resultList[i]
+                                if (y is StringData) {
+                                    if (y.value.equals(x.value)) {
+                                        resultList.removeAt(i)
+                                    }
+                                }
+                            }
+                        } else if (x is IntData) {
+                            for (i in (resultList.size - 1) downTo 0) {
+                                val y = resultList[i]
+                                if (y is IntData) {
+                                    if (y.value == x.value) {
+                                        resultList.removeAt(i)
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        throw Exception("Functions are not supported in List")
+                    }
+                }
+            } else {
+                throw Exception("$action is not referenced")
+            }
+            runtime.symbolTable.put(lsName, ListData(resultList))
+            return None
+        } else {
+            throw Exception("$lsName is not a list")
+        }
+    }
 }
