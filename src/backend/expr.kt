@@ -270,3 +270,27 @@ class readStruct(
         return ret!!.eval(runtime)
     }
 }
+
+class IntArray(
+    val elements: List<Expr>
+): Expr() {
+    fun checkInt(values:List<Expr>, runtime:Runtime): Array<IntData> {
+        val numArray = Array<IntData>(values.size) { IntData(0) }
+        var iter = 0;
+        for (value in values) {
+            val x = value.eval(runtime)
+            if (x is IntData) {
+                numArray[iter] = x
+            } else {
+                throw Exception("only int for IntArray")
+            }
+            iter++
+        }
+        return numArray
+    }
+
+    override fun eval(runtime:Runtime): Data =
+    IntArrData(checkInt(elements, runtime))
+}
+
+

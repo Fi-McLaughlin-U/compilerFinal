@@ -42,3 +42,8 @@ class FuncData(
         "$name($it) { ... }"
     }
 }
+
+class IntArrData(val values:Array<IntData>): Data() {
+    override fun toString()
+    = "[" + values.joinToString(", ").let{ "$it" } + "]"
+}
