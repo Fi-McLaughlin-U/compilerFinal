@@ -2,9 +2,9 @@
 
 name = assignment_3
 
-CLASSPATH = /antlr-4.11.1-complete.jar:./target
+CLASSPATH = ../antlr-4.11.1-complete.jar:./target
 JAVAC = javac -cp $(CLASSPATH)
-ANTLR = java -jar /antlr-4.11.1-complete.jar -no-visitor -no-listener
+ANTLR = java -jar ../antlr-4.11.1-complete.jar -no-visitor -no-listener
 TESTRIG = java -cp $(CLASSPATH) org.antlr.v4.gui.TestRig
 
 build:
